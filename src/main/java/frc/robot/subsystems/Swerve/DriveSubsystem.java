@@ -25,11 +25,6 @@ package frc.robot.subsystems.Swerve;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
-import com.pathplanner.lib.util.PathPlannerLogging;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -39,11 +34,8 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.robot.Constants.AutoConstants;
 import frc.robot.Constants.DriveConstants;
-import frc.robot.Constants.LimelightConstants;
 import frc.robot.Constants.ShuffleboardConstants;
-import frc.robot.subsystems.LimelightHelpers;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -51,7 +43,6 @@ import edu.wpi.first.networktables.GenericEntry;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StructArrayPublisher;
 import edu.wpi.first.networktables.StructPublisher;
-import edu.wpi.first.wpilibj.DriverStation;
 
 public class DriveSubsystem extends SubsystemBase {
 
@@ -90,9 +81,6 @@ public class DriveSubsystem extends SubsystemBase {
 
   private StructPublisher<Pose2d> publish_robotPose = NetworkTableInstance.getDefault()
       .getStructTopic("/Odometry/RobotPose2D", Pose2d.struct).publish();
-
-  private StructPublisher<Pose2d> publish_limelightRobotPose2d = NetworkTableInstance.getDefault()
-      .getStructTopic("/Odometry/LimelightRobotPose2D", Pose2d.struct).publish();
 
   final StructPublisher<Pose2d> publish_poseEstimator = NetworkTableInstance.getDefault()
       .getStructTopic("/Odometry/PoseEstimation", Pose2d.struct).publish();
@@ -191,8 +179,7 @@ public class DriveSubsystem extends SubsystemBase {
   public void zeroPose() {
     // m_odometry.resetPosition(getHeading(), getSwerveModulePositions(), new
     // Pose2d(1.21, 5.53, getHeading()));
-    m_odometry.resetPosition(getHeading(), getSwerveModulePositions(),
-        LimelightHelpers.getBotPose2d_wpiBlue(LimelightConstants.kLimelightName));
+    m_odometry.resetPosition(getHeading(), getSwerveModulePositions(), getPose());
   }
 
   // Relative Robot DriveSubsystem for Pathplanner
@@ -288,13 +275,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     // Pathplanner trajectory for AdvantageScope
 
-    PathPlannerLogging.setLogActivePathCallback((poses) -> {
-      field.getObject("path").setPoses(poses);
-    });
 
     // Pathplanner
 
     //RobotConfig config = new RobotConfig(74.088, 6.883, new ModuleConfig(0.048, 5.450, 1.200, ), 0)
+    /*
     RobotConfig config = new RobotConfig(0, 0, null, null);
     try{
       config = RobotConfig.fromGUISettings();
@@ -327,7 +312,7 @@ public class DriveSubsystem extends SubsystemBase {
           return false;
         },
         this
-      );
+      ); */
   }
 
   @Override
@@ -351,7 +336,6 @@ public class DriveSubsystem extends SubsystemBase {
     publish_SwerverSetpoints.set(setPoints);
     publish_robotRotation.set(getRotation2d());
     publish_robotPose.set(getPose());
-    publish_limelightRobotPose2d.set(LimelightHelpers.getBotPose2d_wpiBlue(LimelightConstants.kLimelightName));
     publish_poseEstimator.set(poseEstimator.getEstimatedPosition());
     updateShuffleboard();
 
